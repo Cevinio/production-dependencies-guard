@@ -25,7 +25,7 @@ Additional guard checks can be enabled in the top-level composer.json file:
             "check-abandoned",
             
             "white-list:vendor/package-one",
-            "white-list:vendor/package-two",
+            "white-list:vendor/package-two:abandoned,description",
             
             "accept-license:MIT",
             "accept-license:proprietary"
@@ -34,12 +34,13 @@ Additional guard checks can be enabled in the top-level composer.json file:
 }
 ```
 
-- `white-list:...` adds a package to white-list, so it's not getting reported in spite of violations
+- `white-list:<package>` adds a package to white-list, so it's not getting reported in spite of violations
+- `white-list:<package>:<guard>,...` adds a package to white-list only for the specified guards
 - `check-lock-file` uses composer.lock instead of composer.json, allowing deeper dependencies analysis
 - `check-description` enables description and keywords analysis (searches `debug`), allowing to detect custom dev-packages
 - `check-abandoned` enables abandoned packages checking
 - `check-license` enables license checking (packages must provide license information)
-- `accept-license:...` specifies which licenses should be accepted (if the setting omitted, any license incl. proprietary)
+- `accept-license:<license>` specifies which licenses should be accepted (if the setting omitted, any license incl. proprietary)
 
 # Usage
 

@@ -3,28 +3,21 @@
 namespace Kalessil\Composer\Plugins\ProductionDependenciesGuard;
 
 use Composer\Package\CompletePackageInterface;
-use Kalessil\Composer\Plugins\ProductionDependenciesGuard\Inspectors\InspectorInterface as InspectorContract;
 
-final class Whitelist implements InspectorContract
+final class Whitelist
 {
-    /** @var array<int,string> */
+    /** @var array<string,array<string>|null> */
     private $whitelist;
 
-    public function __construct(array $settings)
+    public function __construct(array $whitelist)
     {
-        $this->whitelist = array_map(
-            static function (string $setting): string { return str_replace('white-list:', '', $setting); },
-            array_filter(
-                array_map('strtolower', array_map('trim', $settings)),
-                static function (string $setting): bool { return strncmp($setting, 'white-list:', 11) === 0; }
-            )
-        );
-        /* whitelisting reason: see https://github.com/symfony/symfony/issues/31379 */
-        array_push($this->whitelist, 'symfony/debug', 'symfony/var-dumper');
+        $this->whitelist = $whitelist;
     }
 
-    public function canUse(CompletePackageInterface $package): bool
+    public function canUse(CompletePackageInterface $package, string $rule): bool
     {
-        return $this->whitelist !== [] && \in_array(strtolower($package->getName()), $this->whitelist, true);
+        $packageName = strtolower($package->getName());
+
+        return (true === isset($this->whitelist[$packageName]) && (true === empty($this->whitelist[$packageName]) || true === in_array($rule, $this->whitelist[$packageName], true )));
     }
 }
