@@ -8,7 +8,7 @@ in description and analyze packages on basis of composer.lock (deeper analysis).
 
 # Installation
 
-`composer require --dev kalessil/production-dependencies-guard:dev-master`
+`composer require --dev cevinio/production-dependencies-guard:dev-main`
 
 # Configuration
 
@@ -25,7 +25,7 @@ Additional guard checks can be enabled in the top-level composer.json file:
             "check-abandoned",
             
             "white-list:vendor/package-one",
-            "white-list:vendor/package-two",
+            "white-list:vendor/package-two:abandoned,description",
             
             "accept-license:MIT",
             "accept-license:proprietary"
@@ -34,21 +34,22 @@ Additional guard checks can be enabled in the top-level composer.json file:
 }
 ```
 
-- `white-list:...` adds a package to white-list, so it's not getting reported in spite of violations
+- `white-list:<package>` adds a package to white-list, so it's not getting reported in spite of violations
+- `white-list:<package>:<guard>,...` adds a package to white-list only for the specified guards
 - `check-lock-file` uses composer.lock instead of composer.json, allowing deeper dependencies analysis
 - `check-description` enables description and keywords analysis (searches `debug`), allowing to detect custom dev-packages
 - `check-abandoned` enables abandoned packages checking
 - `check-license` enables license checking (packages must provide license information)
-- `accept-license:...` specifies which licenses should be accepted (if the setting omitted, any license incl. proprietary)
+- `accept-license:<license>` specifies which licenses should be accepted (if the setting omitted, any license incl. proprietary)
 
 # Usage
 
-When the package is added to require-dev section of your `composer.json` file (`"kalessil/production-dependencies-guard": "dev-master"`),
+When the package is added to require-dev section of your `composer.json` file (`"cevinio/production-dependencies-guard": "dev-main"`),
 it'll **prevent adding dev-packages into `require` section**. Since dev-packages has no security guaranties 
 (not intended for production use, only development purposes), this also improves your application security.
 
 ```
-composer require --dev kalessil/production-dependencies-guard:dev-master
+composer require --dev cevinio/production-dependencies-guard:dev-main
 
 composer require phpunit/phpunit:*
 # it should be `composer require --dev phpunit/phpunit:*` here
@@ -68,4 +69,4 @@ Installation failed, reverting ./composer.json to its original content.
 
 # Stability
 
-This package is only available in its `dev-master` version: according to the package purpose.
+This package is only available in its `dev-main` version: according to the package purpose.
