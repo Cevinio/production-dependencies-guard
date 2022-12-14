@@ -1,37 +1,39 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Kalessil\Composer\Plugins\ProductionDependenciesGuard;
 
 use Composer\Composer;
-use Composer\EventDispatcher\EventSubscriberInterface as EventSubscriberContract;
+use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Package\CompletePackageInterface;
-use Composer\Plugin\PluginInterface as ComposerPluginContract;
+use Composer\Plugin\PluginInterface;
 use Composer\Script\ScriptEvents;
 use Kalessil\Composer\Plugins\ProductionDependenciesGuard\Inspectors\ByPackageAbandonedInspector;
 use Kalessil\Composer\Plugins\ProductionDependenciesGuard\Inspectors\ByPackageDescriptionInspector;
 use Kalessil\Composer\Plugins\ProductionDependenciesGuard\Inspectors\ByPackageLicenseInspector;
 use Kalessil\Composer\Plugins\ProductionDependenciesGuard\Inspectors\ByPackageNameInspector;
 use Kalessil\Composer\Plugins\ProductionDependenciesGuard\Inspectors\ByPackageTypeInspector;
-use Kalessil\Composer\Plugins\ProductionDependenciesGuard\Inspectors\InspectorInterface as InspectorContract;
+use Kalessil\Composer\Plugins\ProductionDependenciesGuard\Inspectors\InspectorInterface;
 use Kalessil\Composer\Plugins\ProductionDependenciesGuard\Suppliers\FromComposerLockSupplier;
 use Kalessil\Composer\Plugins\ProductionDependenciesGuard\Suppliers\FromComposerManifestSupplier;
-use Kalessil\Composer\Plugins\ProductionDependenciesGuard\Suppliers\SupplierInterface as SupplierContract;
+use Kalessil\Composer\Plugins\ProductionDependenciesGuard\Suppliers\SupplierInterface;
 
-final class Guard implements ComposerPluginContract, EventSubscriberContract
+final class Guard implements PluginInterface, EventSubscriberInterface
 {
-    /** @var bool */
-    private $useLockFile;
-    /** @var Composer */
-    private $composer;
-    /** @var array<string,InspectorContract> */
-    private $inspectors;
-    /** @var Whitelist */
-    private $whitelist;
-    /** @var SupplierContract */
-    private $supplier;
+    private bool $useLockFile;
 
-    public function activate(Composer $composer, IOInterface $io)
+    private Composer $composer;
+
+    /** @var array<string,InspectorInterface> */
+    private array $inspectors;
+
+    private Whitelist $whitelist;
+
+    private SupplierInterface $supplier;
+
+    public function activate(Composer $composer, IOInterface $io): void
     {
         $settings = new Settings();
 
@@ -66,50 +68,59 @@ final class Guard implements ComposerPluginContract, EventSubscriberContract
         );
     }
 
-    private function check(SupplierContract $supplier, CompletePackageInterface... $packages)
+    private function check(SupplierInterface $supplier, CompletePackageInterface ...$packages): void
     {
         $violations = [];
+
         foreach ($packages as $package) {
-            $packageName            = strtolower($package->getName());
-            $packageId              = sprintf('%s (via %s)', $packageName, implode(', ', $supplier->why($packageName)));
-            $violations[$packageId] = [];
+            $packageName = strtolower($package->getName());
+            $packageId   = sprintf('%s (via %s)', $packageName, implode(', ', $supplier->why($packageName)));
+
             foreach ($this->inspectors as $rule => $inspector) {
-                if (! $this->whitelist->canUse($package, $rule) && ! $inspector->canUse($package)) {
+                if (!$this->whitelist->canUse($package, $rule) && !$inspector->canUse($package)) {
                     $violations[$packageId][] = $rule;
                 }
             }
         }
-        if (($violations = array_filter($violations)) !== []) {
-            $message = sprintf(
-                'Dependencies guard has found violations in require-dependencies (source: %s):',
-                $this->useLockFile ? 'lock-file' : 'manifest'
-            );
-            foreach ($violations as $packageName => $rules) {
-                $message .= PHP_EOL . ' - ' . $packageName . ': ' . implode(', ', $rules);
-            }
-            throw new \RuntimeException($message);
+
+        if (empty($violations)) {
+            return;
         }
+
+        $message = sprintf(
+            'Dependencies guard has found violations in require-dependencies (source: %s):',
+            $this->useLockFile ? 'lock-file' : 'manifest'
+        );
+
+        foreach ($violations as $packageName => $rules) {
+            $message .= PHP_EOL . ' - ' . $packageName . ': ' . implode(', ', $rules);
+        }
+
+        throw new \RuntimeException($message);
     }
 
     /** @return array<int, CompletePackageInterface> */
-    private function find(string ...$packages): array {
+    private function find(string ...$packages): array
+    {
         /* @infection-ignore-all */
         return array_filter(
             $this->composer->getRepositoryManager()->getLocalRepository()->getPackages(),
-            static function (CompletePackageInterface $package) use ($packages): bool { return \in_array(strtolower($package->getName()), $packages, true); }
+            static function (CompletePackageInterface $package) use ($packages): bool {
+                return in_array(strtolower($package->getName()), $packages, true);
+            }
         );
     }
 
-    public function checkGeneric()
+    public function checkGeneric(): void
     {
         $this->check($this->supplier, ...$this->find(...$this->supplier->packages()));
     }
 
-    public function deactivate(Composer $composer, IOInterface $io)
+    public function deactivate(Composer $composer, IOInterface $io): void
     {
     }
 
-    public function uninstall(Composer $composer, IOInterface $io)
+    public function uninstall(Composer $composer, IOInterface $io): void
     {
     }
 }

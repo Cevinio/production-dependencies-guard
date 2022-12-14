@@ -1,11 +1,12 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Kalessil\Composer\Plugins\ProductionDependenciesGuard\Inspectors;
 
 use Composer\Package\CompletePackageInterface;
-use Kalessil\Composer\Plugins\ProductionDependenciesGuard\Inspectors\InspectorInterface as InspectorContract;
 
-final class ByPackageDescriptionInspector implements InspectorContract
+final class ByPackageDescriptionInspector implements InspectorInterface
 {
     /* ignore reason: see https://github.com/symfony/symfony/issues/31379 */
     private const IGNORE_PACKAGES = [
@@ -16,22 +17,24 @@ final class ByPackageDescriptionInspector implements InspectorContract
 
     private function hasDebugKeyword(CompletePackageInterface $package): bool
     {
-        $callback = static function (string $term): bool { return strtolower($term) === 'debug'; };
-        return array_filter($package->getKeywords() ?: [], $callback) !== [];
+        return array_filter($package->getKeywords(), static function (string $term): bool {
+            return strtolower($term) === 'debug';
+        }) !== [];
     }
 
     private function hasAnalyzerDescription(CompletePackageInterface $package): bool
     {
         $description = $package->getDescription() ?: '';
+
         return stripos($description, 'debug') !== false || preg_match('/static\s+(code\s+)?(analyzer|analysis)/i', $description) === 1;
     }
 
     public function canUse(CompletePackageInterface $package): bool
     {
-        if (true === in_array(strtolower($package->getName()), self::IGNORE_PACKAGES, true)) {
+        if (in_array(strtolower($package->getName()), self::IGNORE_PACKAGES, true)) {
             return true;
         }
 
-        return ! $this->hasDebugKeyword($package) && ! $this->hasAnalyzerDescription($package);
+        return !$this->hasDebugKeyword($package) && !$this->hasAnalyzerDescription($package);
     }
 }

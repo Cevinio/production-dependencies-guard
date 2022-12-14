@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Kalessil\Composer\Plugins\ProductionDependenciesGuard\Inspectors;
 
@@ -13,6 +15,7 @@ final class ByPackageAbandonedInspectorTest extends TestCase
         $mock->expects($this->atLeastOnce())->method('isAbandoned')->willReturn(true, false);
 
         $component = new ByPackageAbandonedInspector();
+
         $this->assertFalse($component->canUse($mock));
         $this->assertTrue($component->canUse($mock));
     }

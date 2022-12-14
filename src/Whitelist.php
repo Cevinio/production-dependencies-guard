@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Kalessil\Composer\Plugins\ProductionDependenciesGuard;
 
@@ -7,7 +9,7 @@ use Composer\Package\CompletePackageInterface;
 final class Whitelist
 {
     /** @var array<string,array<string>|null> */
-    private $whitelist;
+    private array $whitelist;
 
     public function __construct(array $whitelist)
     {
@@ -18,6 +20,9 @@ final class Whitelist
     {
         $packageName = strtolower($package->getName());
 
-        return (true === isset($this->whitelist[$packageName]) && (true === empty($this->whitelist[$packageName]) || true === in_array($rule, $this->whitelist[$packageName], true )));
+        return (
+            isset($this->whitelist[$packageName]) &&
+            (empty($this->whitelist[$packageName]) || in_array($rule, $this->whitelist[$packageName], true))
+        );
     }
 }

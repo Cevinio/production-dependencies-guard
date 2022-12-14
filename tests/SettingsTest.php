@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Kalessil\Composer\Plugins\ProductionDependenciesGuard;
 
@@ -15,8 +17,8 @@ final class SettingsTest extends TestCase
         $expectedWhiteList = [
             'vendor/trim' => [],
             'vendor/capitalization' => [],
-            'vendor/package1' => [ 'description', 'license', 'lock-file' ],
-            'vendor/package2' => [ 'abandoned', 'lock-file' ],
+            'vendor/package1' => ['description', 'license', 'lock-file'],
+            'vendor/package2' => ['abandoned', 'lock-file'],
         ];
 
         $expectedAcceptLicense = [

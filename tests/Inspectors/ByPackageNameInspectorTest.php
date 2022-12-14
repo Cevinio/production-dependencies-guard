@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Kalessil\Composer\Plugins\ProductionDependenciesGuard\Inspectors;
 
@@ -18,6 +20,7 @@ final class ByPackageNameInspectorTest extends TestCase
         ]);
 
         $component = new ByPackageNameInspector();
+
         $this->assertTrue($component->canUse($mock));
         $this->assertFalse($component->canUse($mock));
         $this->assertFalse($component->canUse($mock));
