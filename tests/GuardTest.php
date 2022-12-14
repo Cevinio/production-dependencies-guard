@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Kalessil\Composer\Plugins\ProductionDependenciesGuard;
 
@@ -25,16 +27,21 @@ final class GuardTest extends TestCase
             ->disableOriginalConstructor()
             ->onlyMethods(['getRepositoryManager'])
             ->getMock();
+
         $repositoryManager = $this->getMockBuilder(RepositoryManager::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['getLocalRepository'])
             ->getMock();
+
         $installedRepository = $this->getMockBuilder(InstalledRepositoryInterface::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['getPackages'])
             ->getMockForAbstractClass();
+
         $composer->expects($this->atLeastOnce())->method('getRepositoryManager')->willReturn($repositoryManager);
+
         $repositoryManager->expects($this->atLeastOnce())->method('getLocalRepository')->willReturn($installedRepository);
+
         $installedRepository->expects($this->atLeastOnce())->method('getPackages')->willReturnCallback(function (): array {
             $pass = $this->createMock(CompletePackageInterface::class);
             $pass->expects($this->atLeastOnce())->method('getName')->willReturn('kalessil/kalessil');
@@ -73,6 +80,7 @@ ___EOM___
         );
 
         putenv(sprintf('COMPOSER=%s/data/activate-additional-features.json', __DIR__));
+
         $component = new Guard();
         $component->activate($composer, $this->createMock(IOInterface::class));
         $component->checkGeneric();
@@ -84,16 +92,21 @@ ___EOM___
             ->disableOriginalConstructor()
             ->onlyMethods(['getRepositoryManager'])
             ->getMock();
+
         $repositoryManager = $this->getMockBuilder(RepositoryManager::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['getLocalRepository'])
             ->getMock();
+
         $installedRepository = $this->getMockBuilder(InstalledRepositoryInterface::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['getPackages'])
             ->getMockForAbstractClass();
+
         $composer->expects($this->atLeastOnce())->method('getRepositoryManager')->willReturn($repositoryManager);
+
         $repositoryManager->expects($this->atLeastOnce())->method('getLocalRepository')->willReturn($installedRepository);
+
         $installedRepository->expects($this->atLeastOnce())->method('getPackages')->willReturnCallback(function (): array {
             $pass = $this->createMock(CompletePackageInterface::class);
             $pass->expects($this->atLeastOnce())->method('getName')->willReturn('kalessil/kalessil');
@@ -103,6 +116,7 @@ ___EOM___
         });
 
         putenv(sprintf('COMPOSER=%s/data/activate-none-features.json', __DIR__));
+
         $component = new Guard();
         $component->activate($composer, $this->createMock(IOInterface::class));
         $component->checkGeneric();
@@ -113,6 +127,7 @@ ___EOM___
         $composer = $this->getMockBuilder(Composer::class)
             ->disableOriginalConstructor()
             ->getMock();
+
         $composer->expects($this->never())->method($this->anything());
 
         $component = new Guard();
@@ -124,6 +139,7 @@ ___EOM___
         $composer = $this->getMockBuilder(Composer::class)
             ->disableOriginalConstructor()
             ->getMock();
+
         $composer->expects($this->never())->method($this->anything());
 
         $component = new Guard();

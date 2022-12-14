@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Kalessil\Composer\Plugins\ProductionDependenciesGuard;
 
@@ -28,37 +30,42 @@ class Settings
         self::WHITE_LIST,
     ];
 
-    /** @var array */
-    private $settings;
+    /** @var array<string, array> */
+    private array $settings;
 
     public function __construct()
     {
-        $manifest = json_decode(file_get_contents(Factory::getComposerFile()), true);
+        $manifest = json_decode(
+            json: file_get_contents(Factory::getComposerFile()),
+            associative: true,
+            flags: JSON_THROW_ON_ERROR
+        );
+
         $manifestSettings = $manifest['extra']['production-dependencies-guard'] ?? [];
 
         foreach ($manifestSettings as $setting) {
             $settingParts = explode(':', $setting);
-            $settingName = strtolower(trim(array_shift($settingParts)));
+            $settingName  = strtolower(trim(array_shift($settingParts)));
 
-            if (true === in_array($settingName, self::BOOLEAN_SETTINGS, true)) {
+            if (in_array($settingName, self::BOOLEAN_SETTINGS, true)) {
                 if (count($settingParts) !== 0) {
                     throw new \InvalidArgumentException('Malformed setting, found unexpected colon: ' . $settingName);
                 }
 
                 $this->settings[$settingName] = true;
-            } elseif (true === in_array($settingName, self::LIST_SETTINGS, true)) {
+            } elseif (in_array($settingName, self::LIST_SETTINGS, true)) {
                 if (count($settingParts) !== 1) {
                     throw new \InvalidArgumentException('Malformed setting, expected exactly one colon: ' . $settingName);
                 }
 
                 $settingItem = strtolower(trim($settingParts[0]));
 
-                if ('' === $settingItem) {
+                if ($settingItem === '') {
                     throw new \InvalidArgumentException('Malformed setting, missing value: ' . $settingName);
                 }
 
                 $this->settings[$settingName][] = $settingItem;
-            } elseif (true === in_array($settingName, self::OPTION_SETTINGS, true)) {
+            } elseif (in_array($settingName, self::OPTION_SETTINGS, true)) {
                 $settingPartsCount = count($settingParts);
 
                 if ($settingPartsCount < 1 || $settingPartsCount > 2) {
@@ -67,7 +74,7 @@ class Settings
 
                 $settingItem = strtolower(trim($settingParts[0]));
 
-                if ('' === $settingItem) {
+                if ($settingItem === '') {
                     throw new \InvalidArgumentException('Malformed setting, missing value: ' . $settingName);
                 }
 

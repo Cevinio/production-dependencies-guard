@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Kalessil\Composer\Plugins\ProductionDependenciesGuard;
 
@@ -10,6 +12,7 @@ final class WhitelistTest extends TestCase
     public function testComponent(): void
     {
         $package = $this->createMock(CompletePackageInterface::class);
+
         $package->expects($this->atLeastOnce())->method('getName')->willReturn(
             'package1',
             'Package2',
@@ -21,8 +24,8 @@ final class WhitelistTest extends TestCase
 
         $component = new Whitelist([
             'package1' => [],
-            'package2' => [ 'abandoned' ],
-            '...' => [ 'description' ],
+            'package2' => ['abandoned'],
+            '...' => ['description'],
         ]);
 
         $this->assertTrue($component->canUse($package, 'lock-file'));

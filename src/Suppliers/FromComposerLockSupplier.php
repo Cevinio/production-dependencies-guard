@@ -1,23 +1,35 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Kalessil\Composer\Plugins\ProductionDependenciesGuard\Suppliers;
 
 use Composer\Factory;
-use Kalessil\Composer\Plugins\ProductionDependenciesGuard\Suppliers\SupplierInterface as SuplierContract;
 
-final class FromComposerLockSupplier implements SuplierContract
+final class FromComposerLockSupplier implements SupplierInterface
 {
     /** @var array<string,array<int,string>> */
-    private $dependencies = [];
+    private array $dependencies = [];
 
     public function packages(): array
     {
-        $manifest = json_decode(file_get_contents(substr(Factory::getComposerFile(), 0, -5) . '.lock'), true);
-        foreach ($packages = $manifest['packages'] ?? [] as $package) {
-            $packageName                      = strtolower($package['name'] ?? 'unknown');
-            $this->dependencies[$packageName] = array_map('strtolower', array_keys($package['require'] ?? []));
+        $manifest = json_decode(
+            json: file_get_contents(substr(Factory::getComposerFile(), 0, -5) . '.lock'),
+            associative: true,
+            flags: JSON_THROW_ON_ERROR
+        );
+
+        $packages = array_map(static function (array $package): array {
+            $package['name'] = strtolower($package['name']);
+
+            return $package;
+        }, $manifest['packages'] ?? []);
+
+        foreach ($packages as $package) {
+            $this->dependencies[$package['name']] = array_map('strtolower', array_keys($package['require'] ?? []));
         }
-        return array_map('strtolower', array_column($packages, 'name'));
+
+        return array_column($packages, 'name');
     }
 
     /** @return array<int, string> */
@@ -25,7 +37,9 @@ final class FromComposerLockSupplier implements SuplierContract
     {
         $which = array_filter(
             $this->dependencies,
-            static function (array $packages) use ($package): bool { return \in_array($package, $packages, true); }
+            static function (array $packages) use ($package): bool {
+                return in_array($package, $packages, true);
+            }
         );
         return $which === [] ? ['manifest'] : array_keys($which);
     }

@@ -1,14 +1,19 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Kalessil\Composer\Plugins\ProductionDependenciesGuard\Inspectors;
 
 use Composer\Package\CompletePackageInterface;
-use Kalessil\Composer\Plugins\ProductionDependenciesGuard\Inspectors\InspectorInterface as InspectorContract;
 
-final class ByPackageTypeInspector implements InspectorContract
+final class ByPackageTypeInspector implements InspectorInterface
 {
+    private const DEV_PACKAGE_TYPES = [
+        'phpcodesniffer-standard',
+    ];
+
     public function canUse(CompletePackageInterface $package): bool
     {
-        return strtolower($package->getType()) !== 'phpcodesniffer-standard';
+        return !in_array(strtolower($package->getType()), self::DEV_PACKAGE_TYPES, true);
     }
 }
