@@ -17,6 +17,8 @@ final class ByPackageNameInspectorTest extends TestCase
             'phpunit/phpunit',
             'roave/security-advisories',
             'Roave/Security-Advisories',
+            'phpstan/phpstan',
+            'phpstan/phpdoc-parser',
         ]);
 
         $component = new ByPackageNameInspector();
@@ -25,5 +27,7 @@ final class ByPackageNameInspectorTest extends TestCase
         $this->assertFalse($component->canUse($mock));
         $this->assertFalse($component->canUse($mock));
         $this->assertFalse($component->canUse($mock));
+        $this->assertFalse($component->canUse($mock));
+        $this->assertTrue($component->canUse($mock));
     }
 }

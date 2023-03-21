@@ -8,7 +8,7 @@ use Composer\Package\CompletePackageInterface;
 
 final class ByPackageNameInspector implements InspectorInterface
 {
-    private const VENDORS = [
+    private const DEV_VENDORS = [
         'phpunit/',
         'codeception/',
         'behat/',
@@ -16,7 +16,11 @@ final class ByPackageNameInspector implements InspectorInterface
         'phpstan/',
     ];
 
-    private const PACKAGES = [
+    private const DEV_VENDOR_EXCEPTIONS = [
+        'phpstan/phpdoc-parser',
+    ];
+
+    private const DEV_PACKAGES = [
         /* Security and compliance tooling */
         'kalessil/production-dependencies-guard',
         'mediact/dependency-guard',
@@ -78,20 +82,27 @@ final class ByPackageNameInspector implements InspectorInterface
         'zendframework/zend-coding-standard',
     ];
 
-    private function containsByVendor(string $dependency): bool
+    private function hasDevVendor(string $dependency): bool
     {
-        return array_filter(self::VENDORS, static function (string $vendor) use ($dependency): bool {
+        return array_filter(self::DEV_VENDORS, static function (string $vendor) use ($dependency): bool {
             return stripos($dependency, $vendor) === 0;
         }) !== [];
     }
 
-    private function contains(string $dependency): bool
+    private function isVendorException(string $dependency): bool
     {
-        return in_array($dependency, self::PACKAGES, true);
+        return in_array($dependency, self::DEV_VENDOR_EXCEPTIONS, true);
+    }
+
+    private function isDevPackage(string $dependency): bool
+    {
+        return in_array($dependency, self::DEV_PACKAGES, true);
     }
 
     public function canUse(CompletePackageInterface $package): bool
     {
-        return !$this->contains($packageName = strtolower($package->getName())) && !$this->containsByVendor($packageName);
+        $packageName = strtolower($package->getName());
+
+        return !$this->isDevPackage($packageName) && ($this->isVendorException($packageName) || !$this->hasDevVendor($packageName));
     }
 }
