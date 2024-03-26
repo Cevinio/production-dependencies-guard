@@ -6,6 +6,9 @@ prevents e.g. debug tool-bars deployment into production environments.
 Additionally, you can configure the guard to decline packages with missing/unfit license, abandoned or mentioning `debug` 
 in description and analyze packages on basis of composer.lock (deeper analysis).
 
+> This repository was forked from [kalessil/production-dependencies-guard](https://github.com/kalessil/production-dependencies-guard) because it is unmaintained.  
+> Credits go to [Vladimir Reznichenko](https://github.com/kalessil) for creating the original production dependency guard.
+
 # Installation
 
 `composer require --dev cevinio/production-dependencies-guard:dev-main`
